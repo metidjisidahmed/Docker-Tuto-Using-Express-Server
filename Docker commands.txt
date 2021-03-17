@@ -1,0 +1,188 @@
+---------------------------------------------------INTRO ---------------------------------------------------
+
+docker run <image_name>
+run a container from an image 
+
+container : an instance of a downloaded image
+
+docker ps
+to list all the running contaiers 
+
+docker ps -a
+
+to list all the running AND THE ALREADY RUN containers 
+
+docker stop <container_id>
+to stop the execution of a container
+the conteiner ID is given in the "docker ps" command 
+
+docker remove <container_id>
+to remove an existed container
+
+docker images
+to list all the download images 
+
+docker rmi <image_name>
+to delete an image
+
+docker pull <image_name> 
+to download and not run a container instance
+
+docker run <image_name> <shell_command>
+executing a shell comand while we start running a container 
+
+docker exec <container_id> <shell_command>
+executing a shell command in a container already running 
+
+docker run -d <image_name>
+running a container in the background , so we can execute another commands while the container is running in the backend
+
+for example :  running a  node application
+
+docker attach <docker_id>
+going back to the docker running in the background
+
+
+docker run --name <container_name> <image_name>
+run a docker container with the specified name 
+
+---------------------------------------------------TAGS---------------------------------------------------
+
+docker run <image_name>:<Version>
+run a container of a specified version of the image 
+ps : the default version is 'latest' means the latest version
+
+docker run -it <image_name>
+run a container in an interactive mode (i) and attached to a terminal (t)
+means if the container has prompts and inputs to read ( readln ) 
+
+docker run -p <ip>:<port> <image_name>
+my container will be available as a 
+internal IP in http://172.17.0.2:5000
+as extern in http://192.168.1.<ip>:<port>
+
+docker inspect <container_name>
+to get a detailed info about this container in JSON format
+
+docker logs <container_name>
+to get all the logs which concerns this container ( useful in containers running in the background )
+
+TO STORE THE DB DATA CONTAINER 
+
+if we remove a db container ( mongodb or mysql ) , all the data there will be destroyed . so we need to make these data persitant
+example : 
+docker run -v /opt/datadir/:/var/lib/mysql mysql
+the data will be stored permanently in this location "/opt/datadir/:/var/lib/mysql"
+
+-------------------------------------- ENVIRONEMENT VARIABLES ------------------------------
+
+docker run -e <env_var>=<val> <image_name>
+
+run an instance of container with the defined environment variables 
+
+runing : docker inspect <docker_name> will give you an info baout environment variables you used 
+
+-------------------------------------- ENVIRONEMENT VARIABLES ------------------------------
+
+docker build <dockerFile>  -t <the_created_image_name>
+
+after creating the dockerFile ( see the instructions in 47min in the youtube video freecodecamp ) : 
+run this command to associate the dockerFile with my new created image with the mentionned name 
+
+all the imporatnt things are in the DockerFile 
+
+
+--------------------------------------MY FIRST EXPERIANCE : NODE APP-----------------------------------------
+I followed the video : https://www.youtube.com/watch?v=edPrPcgjTgw&t=65s
+
+1/creating Dockerfile empty file
+2/putting the commands and sepcifying the port to 3333
+
+3/ building my docker image using : docker build DockerFile  -t metidjisidahmed/myfirstnodeapp . 
+the point means this directory where the code is found 
+
+4/ running then : docker run -p 3333:3000 metidjisidahmed/myfirstnodeapp and my node app start working !
+3333:3000 ? it a port mapping , it means wherever we used the port 3000 internally  its now in the port 3333 externally so we will find our node app
+in localhost:3333 ( docker container ) instead of localhost:3000 ( the real code )
+
+5/ run now docker push metidjisidahmed/myfirstnode app 
+and its done ! the docker image is in my accout now !
+
+--------------------------------------ENTRY POINT  vs CMD-----------------------------------------
+both represnets a CMD command in an aray format
+example : sleep 10 <=> CMD [ 'sleep' , '10' ] <=> ENTRYPOINT [ 'sleep' , '10' ]
+
+in the CMD we have to specify all the command by its arguments ( sleep 10 and not just 'sleep' ) unlike in ENTRYPOINT you can specify only the command wothout its arguments 
+ENTRYPOINT [ 'sleep' ] and then in the docker run specify the argument ( docker run <image_name> 10 ) 10 = the argument in the sleep command specified in DockerFile
+
+if we write a whole command beside the docker run command it will ecrase the command specifed in the CMD or ENTRYPOINT
+
+generally we used CMD if the arguments are fixed and the ENTRYPOINT if we have to specify the argument
+
+we can combine the two in certain cases 
+example : by default , we wanna execute sleep 5 but if we specify in the terminal another argument we have to take it in our consideration
+solution : 
+ENTRYPOINT [ 'sleep' ]
+CMD ['5']
+
+--------------------------------------NETWORKING-----------------------------------------
+
+Docker has three types of networks associated to the containers :
+1: bridge : private internal docker ( has internal IP adress usually in 172.7.0.1 , 172.7.0.2 ..... )
+PS : by default there is only one bridge but theris a way to craete multiples bridges 
+to use them exteranally we have to use the port mapping as we did before ( <port_external>:<port_internal> )
+this is the dafult way in the containers 
+
+2: host 
+docker run <image_name> --network=host 
+means that the port internal IP = the port external IP
+
+3: none
+docker run <image_name> --network=none
+means that the docker container has no connection to the network externally ( they are isolated )
+
+--
+
+docker network ls :to see all the neworks
+
+in the isoection of a container ( docker inspect <container_name> ) : we can get details of the network settings of this specifeid container ( IP Adress intern/extern , bridge ... )
+
+PS VERY IMPORTANT : Docker has its embedded DNS , that means that instead of setting the IP of a container , we simply have to set the container name
+so if we for example have a mongodb server hosted as a docker container with the name 'my_bdd' in my nodejs App i can do simply mongo.connect(my_bdd) instead of 192.168.1.1or something else!
+
+--------------------------------------Volumes-----------------------------------------
+USually the data created by the dokcer containers will disappear once we remove the container 
+so we will use Volumes to persisit the data created by our containers ( example mongodb data bases or my sql )
+docker volume create <name_of_the_volume> : created Volume in the path /var/lib/docker/volume/<name_of_the_volume>
+
+to run the docker container using the volule we are created to persist the data we use the command :
+docker run -v <name_of_the_volume>:<path_where_the_data_is_normally_stored> <name _of_the_image>
+exemple : docker run -v my_volume:/var/lib/mysql mysql 
+its like we said : instead of storing the data in /var/lib/mysql , store them in /var/lib/docker/volumes/my_volume
+this type is called : 'Volume Mounting'
+the other type is called : "bind Mounting"
+it means that instead of creating a volume and associate it to the data folder , we just associate the data folder to a folder persisitant which will never be destroyed
+example  : docker run -v /data/mysql:/var/lib/mysql mysql
+
+--------------------------------------Docker Compose -----------------------------------------
+If we wanna run multiples docker containers from different images and lay between them  , for example Mongodb Container with NodeJs Container  : we have to use a technologu called 'Docker Compose'
+
+check the docker-compose.yml to see how we should implement it 
+but before check it : lets take look at the legacy version ( will be deprecated soon )
+docker run -d --name=db mongodb
+docker run -d --name=my-server -p 5000:3000 --link db:db nodejs-server 
+ 
+ its obvious that our nodeApp has to connect with our mongodb so inorder to do the relation we did '--link db:db' means whenever we will has 'db' in our nodeJs code , it will refer to our docker container db (  the mongodb  container which has this name)
+ and for the new way : check the docker-compose.yml
+ how did i build it : check https://dev.to/jay97/docker-compose-an-express-and-mongo-app-aai
+
+
+
+
+
+ 
+
+
+
+
+
