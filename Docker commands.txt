@@ -175,10 +175,17 @@ docker run -d --name=my-server -p 5000:3000 --link db:db nodejs-server
  its obvious that our nodeApp has to connect with our mongodb so inorder to do the relation we did '--link db:db' means whenever we will has 'db' in our nodeJs code , it will refer to our docker container db (  the mongodb  container which has this name)
  and for the new way : check the docker-compose.yml
  how did i build it : check https://dev.to/jay97/docker-compose-an-express-and-mongo-app-aai
-
-
-
-
+ 
+ -----------------------------------------------------------Docker Swarm -----------------------------------------
+ it consists in combining many docker hubs ( seperate hosts ) to host our docker containers so the charge ( the containers ) will be sistributed between the docker swarm manager ( the host who launched the docker swarm ) and the other workers 
+ how to ?
+ we have to designate a docker mangaer , the machine which will run 'docker swarm init' , this command will return to us in the terminal : the token that we should to use in the workers machines to indicate that they are the workers for this swarm manager 
+ This command is : 'docker swarm join --token <token>'
+ and that's it ! now , in the dokcer manager : we will run our docker run commands and the docker swarm will handle the rest( in which machine this container will be hosted )
+ 
+ to create many instances of a docker image : 'dockerservice create  --replicas=<nbr_of_instances> <docker_image>' and the docker swarm will handle the distrubtion of these instances containers between the connected machines
+ PS : this command has a similar arguments to the docker run ( -p , -d , ..... ) and it has to be eecuted in the docker manager machine
+ 
 
  
 
